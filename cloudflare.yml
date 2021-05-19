@@ -1,0 +1,25 @@
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+    - name: Create Cloudflare Worker Script
+      uri:
+        body: "addEventListener('fetch', event => { event.respondWith(fetch(event.request)) })"
+        body_format: json
+        url: https://api.cloudflare.com/client/v4/accounts/ee8d35b161aec65f2203804c389568e9/workers/scripts/this-is_my_worker_script-01
+        method: PUT
+        headers:
+          Content-Type='application/javascript'
+          X-Auth-Email='jerome@sheed.co.za'
+          X-Auth-Key='private'
+
+    - name: Create Cloudflare Worker Route
+      uri:
+        body: '{"pattern":"yoonix.co.za/*","script":"this-is_my_worker_script-01"}'
+        body_format: json
+        url: https://api.cloudflare.com/client/v4/zones/56e4f6a30011f2df3a997cbca2277889/workers/routes
+        method: POST
+        headers:
+          Content-Type='application/json'
+          X-Auth-Email='jerome@sheed.co.za'
+          X-Auth-Key='private'
