@@ -1,8 +1,11 @@
 - hosts: localhost
   gather_facts: no
   connection: local
+  vars:
+    cf_email: "{{ lookup('env', 'CF_EMAIL') }}"
+    cf_apikey: "{{ lookup('env', 'CF_APIKEY') }}"
   tasks:
-    - name: Create Cloudflare Worker Script
+    - name: Adding Cloudflare Worker Script
       uri:
         body: "addEventListener('fetch', event => { event.respondWith(fetch(event.request)) })"
         body_format: json
@@ -10,10 +13,10 @@
         method: PUT
         headers:
           Content-Type='application/javascript'
-          X-Auth-Email='jerome@sheed.co.za'
-          X-Auth-Key='private'
+          X-Auth-Email="{{ cf_email }}"
+          X-Auth-Key="{{ cf_apikey }}"
 
-    - name: Create Cloudflare Worker Route
+    - name: Adding Cloudflare Worker Route
       uri:
         body: '{"pattern":"yoonix.co.za/*","script":"this-is_my_worker_script-01"}'
         body_format: json
@@ -21,5 +24,29 @@
         method: POST
         headers:
           Content-Type='application/json'
-          X-Auth-Email='jerome@sheed.co.za'
-          X-Auth-Key='private'
+          X-Auth-Email="{{ cf_email }}"
+          X-Auth-Key="{{ cf_apikey }}"
+      register: cf_response
+      
+    - name: Saving Worker Route ID
+      set_fact:
+        cf_workerid: "{{ cf_response.json.result.id }}"
+        
+    - name: Print worker route ID
+      debug: var=cf_workerid
+
+    - name: Pause
+      pause:
+        seconds: 30
+
+    - name: Delete Cloudflare Worker Route
+      uri:
+        url: https://api.cloudflare.com/client/v4/zones/56e4f6a30011f2df3a997cbca2277889/workers/routes/{{ cf_workerid }}
+        method: DELETE
+        headers:
+          X-Auth-Email="{{ cf_email }}"
+          X-Auth-Key="{{ cf_apikey }}"
+      register: cf_response
+      
+    - name: Show delete response
+      debug: var=cf_response
