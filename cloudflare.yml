@@ -1,17 +1,22 @@
 - hosts: localhost
-  gather_facts: no
+  gather_facts:  no
   connection: local
   vars:
+    cf_accountid: "{{ lookup('env', 'CF_ACCOUNTID') }}"
     cf_email: "{{ lookup('env', 'CF_EMAIL') }}"
     cf_apikey: "{{ lookup('env', 'CF_APIKEY') }}"
-    cf_workername: "{{ lookup('env', 'CF_WORKERNAME') }}"
     cf_domain: "{{ lookup('env', 'CF_DOMAIN') }}"
+    cf_workername: "{{ lookup('env', 'CF_WORKERNAME') }}"
+    cf_route: "{{ lookup('env', 'CF_ROUTE') }}"
   tasks:
+    - name: Include cf_zoneid from get_zoneid.yml
+      include: get_zoneid.yml
+
     - name: Adding Cloudflare Worker Script
       uri:
         body: "addEventListener('fetch', event => { event.respondWith(fetch(event.request)) })"
         body_format: json
-        url: "https://api.cloudflare.com/client/v4/accounts/ee8d35b161aec65f2203804c389568e9/workers/scripts/{{ cf_workername }}"
+        url: "https://api.cloudflare.com/client/v4/accounts/{{ cf_accountid }}/workers/scripts/{{ cf_workername }}"
         headers:
           Content-Type='application/javascript'
           X-Auth-Email="{{ cf_email }}"
@@ -19,9 +24,9 @@
 
     - name: Adding Cloudflare Worker Route
       uri:
-        body: '{"pattern":"{{ cf_domain }}/*","script":"{{ cf_workername }}"}'
+        body: '{"pattern":"{{ cf_route }}","script":"{{ cf_workername }}"}'
         body_format: json
-        url: "https://api.cloudflare.com/client/v4/zones/56e4f6a30011f2df3a997cbca2277889/workers/routes"
+        url: "https://api.cloudflare.com/client/v4/zones/{{ cf_zoneid }}/workers/routes"
         method: POST
         headers:
           Content-Type='application/json'
@@ -42,7 +47,7 @@
 
     - name: Delete Cloudflare Worker Route
       uri:
-        url: "https://api.cloudflare.com/client/v4/zones/56e4f6a30011f2df3a997cbca2277889/workers/routes/{{ cf_workerid }}"
+        url: "https://api.cloudflare.com/client/v4/zones/{{ cf_zoneid }}/workers/routes/{{ cf_workerid }}"
         method: DELETE
         headers:
           X-Auth-Email="{{ cf_email }}"

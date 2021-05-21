@@ -1,0 +1,16 @@
+- name: Getting Zone ID
+  uri:
+    url: "https://api.cloudflare.com/client/v4/zones?match=all&name={{ cf_domain }}" 
+    method: GET
+    headers:
+      Content-Type='application/json'
+      X-Auth-Email="{{ cf_email }}"
+      X-Auth-Key="{{ cf_apikey }}"
+  register: cf_response
+
+- name: Saving Zone ID
+  set_fact:
+    cf_zoneid: "{{ cf_response.json.result | map (attribute='id') | list | first }}"
+
+- name: Printing Zone ID
+  debug: var=cf_zoneid
