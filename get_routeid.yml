@@ -1,0 +1,16 @@
+- name: Getting Route ID
+  uri:
+    url: "https://api.cloudflare.com/client/v4/zones/{{ cf_zoneid }}/workers/routes"
+    method: GET
+    headers:
+      Content-Type='application/json'
+      X-Auth-Email="{{ cf_email }}"
+      X-Auth-Key="{{ cf_apikey }}"
+  register: cf_response
+
+- name: Saving Route ID
+  set_fact:
+    cf_routeid: "{{ cf_response.json.result | map (attribute='id') | list }}"
+
+- name: Printing Route ID
+  debug: var=cf_routeid

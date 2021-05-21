@@ -17,6 +17,7 @@
         body: "addEventListener('fetch', event => { event.respondWith(fetch(event.request)) })"
         body_format: json
         url: "https://api.cloudflare.com/client/v4/accounts/{{ cf_accountid }}/workers/scripts/{{ cf_workername }}"
+        method: PUT
         headers:
           Content-Type='application/javascript'
           X-Auth-Email="{{ cf_email }}"
@@ -44,6 +45,9 @@
     - name: Pause
       pause:
         seconds: 30
+
+    - name: Get all worker routes  
+      include: get_routeid.yml
 
     - name: Delete Cloudflare Worker Route
       uri:
