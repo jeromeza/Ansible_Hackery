@@ -14,10 +14,12 @@ get_zoneid.yml - Extract Zone ID From A Cloudflare Domain
   
 add_worker.yml - Upload A Specific Cloudflare Worker script  
 del_worker.yml - Delete A Specific Cloudflare Worker script  
-get_worker.yml - List All Cloudflare Workers
+get_worker.yml - List All Cloudflare Workers  
   
-get_route_id.yml - List All Cloudflare Routes For A Domain  
-del_route_id.yml - Delete A Specific Cloudflare Route
+get_route_id.yml - List All Cloudflare Routes For A Domain   
+add_route.yml - Add A New Cloudflare Route  
+del_route.yml - Delete A Specific Cloudflare Route  
+update_route.yml - Update An Existing Route  
   
 
 
