@@ -1,0 +1,27 @@
+- hosts: localhost
+  gather_facts:  no
+  connection: local
+  vars:
+    cf_accountid: "{{ lookup('env', 'CF_ACCOUNTID') }}"
+    cf_email: "{{ lookup('env', 'CF_EMAIL') }}"
+    cf_apikey: "{{ lookup('env', 'CF_APIKEY') }}"
+    cf_domain: "{{ lookup('env', 'CF_DOMAIN') }}"
+    cf_workername: "{{ lookup('env', 'CF_WORKERNAME') }}"
+
+  tasks:
+    - name: List Cloudflare Workers
+      uri:
+        url: "https://api.cloudflare.com/client/v4/accounts/{{ cf_accountid }}/workers/scripts"
+        method: GET
+        headers:
+          Content-Type='application/javascript'
+          X-Auth-Email="{{ cf_email }}"
+          X-Auth-Key="{{ cf_apikey }}"
+      register: cf_response
+
+    - name: Saving Workers list
+      set_fact:
+        cf_workerlist: "{{ cf_response.json.result | map (attribute='id') | list }}"
+
+    - name: Printing Route ID
+      debug: var=cf_workerlist

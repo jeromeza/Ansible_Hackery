@@ -1,0 +1,35 @@
+- hosts: localhost
+  gather_facts:  no
+  connection: local
+  vars:
+    cf_accountid: "{{ lookup('env', 'CF_ACCOUNTID') }}"
+    cf_email: "{{ lookup('env', 'CF_EMAIL') }}"
+    cf_apikey: "{{ lookup('env', 'CF_APIKEY') }}"
+    cf_domain: "{{ lookup('env', 'CF_DOMAIN') }}"
+    cf_workername: "{{ lookup('env', 'CF_WORKERNAME') }}"
+    cf_route: "{{ lookup('env', 'CF_ROUTE') }}"  
+  tasks:
+    - name: Detmine Zone ID
+      include: get_zoneid.yml
+
+    - name: Determine Route ID
+      include: get_routeid.yml
+      
+    - name: Updating Cloudflare Worker Route
+      uri:
+        body: '{"pattern":"{{ cf_route }}","script":"{{ cf_workername }}"}'
+        body_format: json
+        url: "https://api.cloudflare.com/client/v4/zones/{{ cf_zoneid }}/workers/routes/{{ cf_routeid }}"
+        method: PUT
+        headers:
+          Content-Type='application/json'
+          X-Auth-Email="{{ cf_email }}"
+          X-Auth-Key="{{ cf_apikey }}"
+      register: cf_response
+      
+    - name: Saving Worker Route ID
+      set_fact:
+        cf_workerid: "{{ cf_response.json.result.id }}"
+        
+    - name: Print worker route ID
+      debug: var=cf_workerid

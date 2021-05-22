@@ -10,7 +10,7 @@
 
 - name: Saving Route ID
   set_fact:
-    cf_routeid: "{{ cf_response.json.result | map (attribute='id') | list }}"
+    cf_routeid: "{{ cf_response.json.result | map (attribute='id') | list | first }}"
 
 - name: Printing Route ID
   debug: var=cf_routeid
