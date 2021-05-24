@@ -1,0 +1,16 @@
+- hosts: localhost
+  gather_facts:  no
+  connection: local
+  vars:
+    cf_accountid: "{{ lookup('env', 'CF_ACCOUNTID') }}"
+    cf_email: "{{ lookup('env', 'CF_EMAIL') }}"
+    cf_apikey: "{{ lookup('env', 'CF_APIKEY') }}"
+    cf_domain: "{{ lookup('env', 'CF_DOMAIN') }}"
+    cf_workername: "{{ lookup('env', 'CF_WORKERNAME') }}"
+
+  tasks:
+    - name: Detmine Zone ID
+      include: get_zoneid.yml
+
+    - name: Include get_routeid.yml
+      include: get_routeid.yml
